@@ -20,6 +20,15 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class EncriptadorAES {
 
+    //formato de codificación que admite caracteres especiales.
+    private static final String UNICODE = "UTF-8";
+    //SHA-1 es un algoritmo de encriptacion
+    private static final String HASH_ALGORITM = "SHA-1";
+    
+    private static final String ESQUEMA_CIFRADO = "AES";
+    private static final String ALGORITMO_ENCRIPTACION = "AES/ECB/PKCS5Padding";
+    
+    
     /**
      * Crea la clave de encriptación que usará internamente nuestra aplicación
      *
@@ -31,10 +40,10 @@ public class EncriptadorAES {
 
         try {
             //para asegurarnos de que admite caracteres especiales usamos UTF-8
-            byte[] cadena = clave.getBytes("UTF-8");
+            byte[] cadena = clave.getBytes(UNICODE);
             
             //SHA-1 es una funcion hash criptográfica
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            MessageDigest md = MessageDigest.getInstance(HASH_ALGORITM);
 
             /*Las siguientes líneas son lo mismo que el return que hay más abajo
             pero desarrollandolo paso a paso*/
@@ -42,9 +51,8 @@ public class EncriptadorAES {
             //cadena = Arrays.copyOf( cadena, 16);
             
             //El 16 indica la cantidad de bytes
-            return new SecretKeySpec(Arrays.copyOf(md.digest(cadena), 16), "AES");
+            return new SecretKeySpec(Arrays.copyOf(md.digest(cadena), 16), ESQUEMA_CIFRADO);
             
-
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException ex) {
             Logger.getLogger(EncriptadorAES.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -64,7 +72,7 @@ public class EncriptadorAES {
         try {
             SecretKeySpec sks = this.crearClave(claveEncriptacion);
             
-            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            Cipher cipher = Cipher.getInstance(ALGORITMO_ENCRIPTACION);
             cipher.init(Cipher.ENCRYPT_MODE, sks);
 
             /*Las siguientes líneas son lo mismo que el return que hay más abajo
@@ -74,11 +82,11 @@ public class EncriptadorAES {
             //String cadenaEncriptada = Base64.getEncoder().encodeToString(encriptada);
             //return cadenaEncriptada;
             
-            return Base64.getEncoder().encodeToString(cipher.doFinal(datos.getBytes("UTF-8")));
+            return Base64.getEncoder().encodeToString(cipher.doFinal(datos.getBytes(UNICODE)));
 
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException ex) {
             Logger.getLogger(EncriptadorAES.class.getName()).log(Level.SEVERE, null, ex);
-            return "";
+            return null;
         }
     }
 
@@ -96,7 +104,7 @@ public class EncriptadorAES {
         try {
             SecretKeySpec sks = this.crearClave(clave);
 
-            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            Cipher cipher = Cipher.getInstance(ALGORITMO_ENCRIPTACION);
             cipher.init(Cipher.DECRYPT_MODE, sks);
             
             /*Las siguientes líneas son lo mismo que el return que hay más abajo
@@ -106,11 +114,11 @@ public class EncriptadorAES {
             //String datosDesencriptados = new String(cadenaDesencriptada);
             //return datosDesencriptados;
             
-            return new String(cipher.doFinal(Base64.getDecoder().decode(datos)));
+            return new String(cipher.doFinal(Base64.getDecoder().decode(datos)), UNICODE);
             
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | UnsupportedEncodingException ex) {
             Logger.getLogger(EncriptadorAES.class.getName()).log(Level.SEVERE, null, ex);
-            return "";
+            return null;
         }
     }
 }
