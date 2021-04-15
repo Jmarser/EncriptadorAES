@@ -23,11 +23,9 @@ public class EncriptadorAES {
     //formato de codificación que admite caracteres especiales.
     private static final String UNICODE = "UTF-8";
     //SHA-1 es un algoritmo de encriptacion
-    private static final String HASH_ALGORITM = "SHA-1";
+    private static final String HASH_ALGORITM = "SHA-256";
     
     private static final String ESQUEMA_CIFRADO = "AES";
-    private static final String ALGORITMO_ENCRIPTACION = "AES/ECB/PKCS5Padding";
-    
     
     /**
      * Crea la clave de encriptación que usará internamente nuestra aplicación
@@ -39,19 +37,16 @@ public class EncriptadorAES {
     private SecretKeySpec crearClave(String clave) {
 
         try {
+            
             //para asegurarnos de que admite caracteres especiales usamos UTF-8
             byte[] cadena = clave.getBytes(UNICODE);
             
-            //SHA-1 es una funcion hash criptográfica
-            MessageDigest md = MessageDigest.getInstance(HASH_ALGORITM);
-
-            /*Las siguientes líneas son lo mismo que el return que hay más abajo
-            pero desarrollandolo paso a paso*/
-            //cadena = md.digest(cadena);
-            //cadena = Arrays.copyOf( cadena, 16);
+            //SHA-256 es una funcion hash criptográfica          
+            final MessageDigest md = MessageDigest.getInstance(HASH_ALGORITM);
+            md.reset();
+            md.update(cadena, 0, cadena.length);
             
-            //El 16 indica la cantidad de bytes
-            return new SecretKeySpec(Arrays.copyOf(md.digest(cadena), 16), ESQUEMA_CIFRADO);
+            return new SecretKeySpec(md.digest(), ESQUEMA_CIFRADO);
             
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException ex) {
             Logger.getLogger(EncriptadorAES.class.getName()).log(Level.SEVERE, null, ex);
@@ -72,7 +67,7 @@ public class EncriptadorAES {
         try {
             SecretKeySpec sks = this.crearClave(claveEncriptacion);
             
-            Cipher cipher = Cipher.getInstance(ALGORITMO_ENCRIPTACION);
+            Cipher cipher = Cipher.getInstance(ESQUEMA_CIFRADO);
             cipher.init(Cipher.ENCRYPT_MODE, sks);
 
             /*Las siguientes líneas son lo mismo que el return que hay más abajo
@@ -83,7 +78,7 @@ public class EncriptadorAES {
             //return cadenaEncriptada;
             
             return Base64.getEncoder().encodeToString(cipher.doFinal(datos.getBytes(UNICODE)));
-
+            
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException ex) {
             Logger.getLogger(EncriptadorAES.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -104,7 +99,7 @@ public class EncriptadorAES {
         try {
             SecretKeySpec sks = this.crearClave(clave);
 
-            Cipher cipher = Cipher.getInstance(ALGORITMO_ENCRIPTACION);
+            Cipher cipher = Cipher.getInstance(ESQUEMA_CIFRADO);
             cipher.init(Cipher.DECRYPT_MODE, sks);
             
             /*Las siguientes líneas son lo mismo que el return que hay más abajo
